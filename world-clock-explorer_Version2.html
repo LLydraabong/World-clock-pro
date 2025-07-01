@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>World Clock Explorer</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --main-bg: linear-gradient(135deg, #232526 0%, #1de9b6 120%);
+      --card-bg: rgba(255,255,255,0.14);
+      --accent: #1de9b6;
+      --accent2: #ffb347;
+      --font-head: 'Orbitron', 'Montserrat', Arial, sans-serif;
+      --font-base: 'Montserrat', Arial, sans-serif;
+      --shadow: 0 8px 40px 0 rgba(31,38,135,0.10);
+    }
+    html, body { height: 100%; }
+    body {
+      min-height: 100vh;
+      background: var(--main-bg);
+      color: #f3f8fa;
+      font-family: var(--font-base);
+      margin: 0;
+      background-attachment: fixed;
+      transition: background 0.6s;
+    }
+    header {
+      text-align: center;
+      padding: 2em 0 1.2em;
+      border-bottom: 2.5px solid var(--accent);
+      background: rgba(0,0,0,0.08);
+      box-shadow: 0 2px 12px 0 rgba(24,24,24,0.09);
+    }
+    .app-logo {
+      width: 56px; height: 56px; vertical-align: middle; margin-right: 0.7em;
+      filter: drop-shadow(0 2px 8px #1de9b699);
+    }
+    h1 {
+      font-family: var(--font-head);
+      font-size: 2.3em;
+      color: var(--accent);
+      font-weight: 900;
+      letter-spacing: 1.5px;
+      margin: 0.18em 0 0.09em;
+      display:inline-block;
+      vertical-align:middle;
+    }
+    .subtitle {
+      font-size: 1.1em;
+      color: #d9f6f3;
+      letter-spacing: 0.8px;
+      margin-bottom: 0.8em;
+      font-weight: 500;
+      margin-top: 0.08em;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2vw 0;
+      min-height: 40vh;
+    }
+    .search-bar {
+      background: var(--card-bg);
+      box-shadow: var(--shadow);
+      border-radius: 12px;
+      padding: 1em 2em;
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+      margin-bottom: 2rem;
+    }
+    .search-bar input {
+      padding: 0.7em 1.1em;
+      border: none;
+      border-radius: 8px;
+      font-family: var(--font-base);
+      font-size: 1.08em;
+      background: #fff;
+      color: #222;
+      min-width: 140px;
+      outline: none;
+    }
+    .continent-group {
+      width: 100%;
+      max-width: 1600px;
+      margin: 2.5em auto;
+    }
+    .continent-title {
+      font-size: 1.7em;
+      color: var(--accent2);
+      font-family: var(--font-head);
+      margin: 1.2em 0 0.4em 1.5vw;
+      letter-spacing: 1.2px;
+      text-shadow: 0 2px 8px #0006;
+    }
+    .clock-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 2.5rem 1.7rem;
+      margin-bottom: 1em;
+      justify-items: stretch;
+      width: 100%;
+    }
+    .clock-card {
+      background: var(--card-bg);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      padding: 1.8em 1em 1.2em;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform .22s cubic-bezier(.4,2,.5,1), box-shadow .14s, background 0.14s;
+      min-height: 340px;
+      position: relative;
+      border: 2px solid transparent;
+      cursor: pointer;
+      backdrop-filter: blur(7px);
+      will-change: transform;
+      overflow: visible;
+      margin-bottom: 1.2em;
+    }
+    .clock-card:hover {
+      transform: translateY(-6px) scale(1.045);
+      border-color: var(--accent2);
+      background: rgba(255,255,255,0.21);
+      z-index: 2;
+      box-shadow: 0 12px 44px 0 rgba(31,38,135,0.13);
+    }
+    .city-title {
+      font-size: 1.24em;
+      font-weight: 800;
+      color: var(--accent2);
+      margin-bottom: 0.32em;
+      letter-spacing:0.5px;
+      font-family:var(--font-head);
+    }
+    .tz-label {
+      font-size: 1em;
+      color: #b3f6ee;
+      margin-bottom: 0.18em;
+    }
+    .clock {
+      font-size: 2.5em;
+      font-family: var(--font-head);
+      color: #fff;
+      font-weight: bold;
+      letter-spacing: 1.2px;
+      margin: 0.37em 0 0.23em;
+      text-shadow: 0 2px 19px rgba(0,0,0,0.10);
+    }
+    .carousel-photos {
+      display: flex;
+      gap: 0.3em;
+      justify-content: center;
+      margin: 0.5em 0 0.15em;
+      min-height: 110px;
+    }
+    .carousel-photo {
+      width: 120px;
+      height: 90px;
+      border-radius: 13px;
+      object-fit: cover;
+      border: 2px solid #fff2;
+      box-shadow: 0 4px 16px #2225;
+      background: #ddd;
+      margin: 0 0.22em;
+    }
+    .famous-place {
+      font-size: 1em;
+      color: #fff;
+      margin: 0.5em 0 0.15em;
+      font-family: var(--font-base);
+      background: rgba(0,0,0,0.13);
+      padding: 0.13em 0.8em;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    .like-btn {
+      margin: 0.45em 0 0.2em;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      font-size: 1.2em;
+      color: #fff;
+      transition: color 0.2s;
+    }
+    .like-btn.liked { color: #ff2653; }
+    .fun-fact {
+      font-size: 0.97em;
+      color: #b3f6ee;
+      font-style: italic;
+      margin: 0.2em 0 0.5em;
+    }
+    .weather-info {
+      font-size:0.93em;
+      color:#fff7;
+      margin:0.2em 0 0.6em;
+      letter-spacing:0.3px;
+    }
+    .travel-btn {
+      background: var(--accent2);
+      color: #000;
+      border-radius: 9px;
+      padding: 0.6em 1.4em;
+      font-weight: 700;
+      font-size: 1em;
+      margin-top: 0.8em;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 3px 10px #1de9b655;
+      transition: background 0.13s;
+    }
+    .travel-btn:hover { background: var(--accent); }
+    .video-container {
+      margin: 2.7em auto 1.3em;
+      background: var(--card-bg);
+      border-radius: 13px;
+      padding: 1.6em 0.5em 1.2em;
+      max-width: 1200px;
+      box-shadow: var(--shadow);
+      text-align: center;
+    }
+    .video-container h2 {
+      color: var(--accent2);
+      font-size: 1.5em;
+      margin-bottom: 1.1em;
+      font-family: var(--font-head);
+      font-weight: 700;
+    }
+    .video-list {
+      display: flex; gap: 1.1em; overflow-x: auto; padding-bottom: 1.1em;
+      justify-content: center;
+      margin-left: 1vw;
+    }
+    .video-list iframe {
+      border: 3px solid var(--accent2);
+      border-radius: 12px;
+      width: 340px;
+      height: 192px;
+      flex: 0 0 auto;
+      background: #111;
+      box-shadow: 0 2px 14px 0 rgba(31,38,135,0.09);
+    }
+    .video-title {
+      color: #fff;
+      margin: 0.25em 0 1.1em;
+      font-size: 1em;
+      font-weight: 600;
+      font-family: var(--font-base);
+    }
+    .dark-mode {
+      --main-bg: linear-gradient(135deg, #181c23 0%, #32564a 100%);
+      --card-bg: rgba(44,53,66,0.19);
+      --accent: #14d9b6;
+      --accent2: #ffd76d;
+      color: #e2e8f0;
+    }
+    .dark-toggle {
+      position: fixed;
+      top: 15px;
+      right: 20px;
+      background: var(--card-bg);
+      border-radius: 50%;
+      width: 48px; height: 48px;
+      border: none;
+      box-shadow: var(--shadow);
+      color: var(--accent2);
+      font-size: 2em;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 22;
+      transition: background 0.3s;
+    }
+    .dark-toggle:hover { background: var(--accent2); color: var(--accent);}
+    @media (max-width: 1100px) {
+      .clock-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+      .carousel-photo { width: 80px;height:55px;}
+      .video-list iframe { width: 200px; height:110px;}
+    }
+    @media (max-width: 700px) {
+      .container { padding: 1vw 0; }
+      .clock-grid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 2.1rem 0.5rem;}
+      header { padding: 1em 0.5em 0.7em; }
+      h1 { font-size:1.3em;}
+      .subtitle { font-size:0.80em;}
+    }
+    /* Loader */
+    #loader-bg {
+      position: fixed;
+      z-index: 9999;
+      inset: 0;
+      background: linear-gradient(140deg, #283e51 0%, #1de9b6 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction:column;
+      transition: opacity 0.6s, visibility 0.6s;
+      opacity: 1;
+      visibility: visible;
+    }
+    #loader-bg.hide {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .mascot-loader {
+      width: 112px;
+      height: 112px;
+      margin-bottom: 1.2em;
+      display: block;
+      animation: mascot-bounce 2s infinite cubic-bezier(.56,0,.44,1);
+    }
+    @keyframes mascot-bounce {
+      0%, 100% { transform: translateY(-4px) scale(1); }
+      40% { transform: translateY(-21px) scale(1.11);}
+      55% { transform: translateY(-9px) scale(1.03);}
+      75% { transform: translateY(4px) scale(0.98);}
+    }
+    .loader-text {
+      color: #fff;
+      font-size: 1.25em;
+      font-family: var(--font-head);
+      letter-spacing:1.2px;
+      font-weight: 700;
+      text-shadow: 0 4px 14px #1de9b670;
+      animation: fadeIn 2.2s;
+    }
+  </style>
+</head>
+<body>
+  <!-- Loader (Mascot) -->
+  <div id="loader-bg">
+    <svg class="mascot-loader" viewBox="0 0 120 120" fill="none">
+      <circle cx="60" cy="60" r="54" fill="#fff" opacity="0.16"/>
+      <ellipse cx="60" cy="60" rx="46" ry="46" fill="url(#a)"/>
+      <ellipse cx="60" cy="60" rx="34" ry="34" fill="#fff" opacity="0.15"/>
+      <g>
+        <ellipse cx="60" cy="67" rx="22" ry="18" fill="#1de9b6"/>
+        <ellipse cx="60" cy="70" rx="12" ry="6" fill="#fff" opacity="0.5"/>
+      </g>
+      <g>
+        <ellipse cx="47" cy="55" rx="5" ry="7" fill="#fff"/>
+        <ellipse cx="73" cy="55" rx="5" ry="7" fill="#fff"/>
+        <ellipse cx="47" cy="56" rx="2.5" ry="2.2" fill="#1de9b6"/>
+        <ellipse cx="73" cy="56" rx="2.5" ry="2.2" fill="#1de9b6"/>
+      </g>
+      <path d="M50 75 Q60 85 70 75" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <defs>
+        <linearGradient id="a" x1="20" y1="20" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#1de9b6"/>
+          <stop offset="1" stop-color="#283e51"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div class="loader-text">Loading World Clock Explorer...</div>
+  </div>
+  <button class="dark-toggle" onclick="toggleDarkMode()" title="Toggle dark mode 🌙">🌙</button>
+  <header>
+    <span class="app-logo">
+      <svg width="54" height="54" viewBox="0 0 120 120" fill="none">
+        <ellipse cx="60" cy="60" rx="46" ry="46" fill="url(#a)"/>
+        <g>
+          <ellipse cx="47" cy="55" rx="5" ry="7" fill="#fff"/>
+          <ellipse cx="73" cy="55" rx="5" ry="7" fill="#fff"/>
+          <ellipse cx="47" cy="56" rx="2.5" ry="2.2" fill="#1de9b6"/>
+          <ellipse cx="73" cy="56" rx="2.5" ry="2.2" fill="#1de9b6"/>
+        </g>
+        <defs>
+        <linearGradient id="a" x1="20" y1="20" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+          <stop stop-color="#1de9b6"/>
+          <stop offset="1" stop-color="#283e51"/>
+        </linearGradient>
+        </defs>
+      </svg>
+    </span>
+    <h1>World Clock Explorer</h1>
+    <div class="subtitle">All world times, all beautiful places, all in one app — Explore, discover, enjoy!</div>
+  </header>
+  <div class="container">
+    <div class="search-bar">
+      <input type="text" placeholder="Search a city or place..." id="search" onkeyup="filterClocks()" />
+      <button class="travel-btn" onclick="travelRandom()">🌏 Travel Now</button>
+    </div>
+    <div id="city-groups"></div>
+  </div>
+  <div class="video-container">
+    <h2>Famous Places Around the World</h2>
+    <div class="video-list" id="video-list"></div>
+  </div>
+  <script>
+    // --- Loader mascot logic ---
+    window.addEventListener('DOMContentLoaded', () => {
+      setTimeout(()=> {
+        document.getElementById('loader-bg').classList.add('hide');
+      }, 1200);
+    });
+
+    // --- City data: city, tz, continent, carousel photos, famous place, fun fact, weather code (sample, expand as needed) ---
+    // For ALL cities: Use a generator or JSON, structure below is ready for 4000+ cities.
+    const cities = [
+      {
+        city: "New York", tz: "America/New_York", continent: "North America",
+        photos: [
+          "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80",
+          "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80"
+        ],
+        place: "Statue of Liberty",
+        funfact: "NYC is the most linguistically diverse city in the world.",
+        weather: "sun"
+      },
+      {
+        city: "London", tz: "Europe/London", continent: "Europe",
+        photos: [
+          "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
+          "https://images.unsplash.com/photo-1465101178521-c1a9136a3e16?auto=format&fit=crop&w=400&q=80"
+        ],
+        place: "Big Ben",
+        funfact: "London has over 170 museums.",
+        weather: "rain"
+      },
+      {
+        city: "Nairobi", tz: "Africa/Nairobi", continent: "Africa",
+        photos: [
+          "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80",
+          "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=400&q=80"
+        ],
+        place: "Nairobi National Park",
+        funfact: "Nairobi is the only city with a national park inside.",
+        weather: "sun"
+      },
+      {
+        city: "Tokyo", tz: "Asia/Tokyo", continent: "Asia",
+        photos: [
+          "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80",
+          "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=400&q=80"
+        ],
+        place: "Tokyo Tower",
+        funfact: "Tokyo is the world's largest city by population.",
+        weather: "cloud"
+      },
+      {
+        city: "Paris", tz: "Europe/Paris", continent: "Europe",
+        photos: [
+          "https://images.unsplash.com/photo-1465101178521-c1a9136a3e16?auto=format&fit=crop&w=400&q=80",
+          "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80"
+        ],
+        place: "Eiffel Tower",
+        funfact: "Paris was originally a Roman city called Lutetia.",
+        weather: "cloud"
+      },
+      {
+        city: "Cairo", tz: "Africa/Cairo", continent: "Africa",
+        photos: [
+          "https://images.unsplash.com/photo-1465101178521-c1a9136a3e16?auto=format&fit=crop&w=400&q=80",
+          "https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=400&q=80"
+        ],
+        place: "Great Pyramid of Giza",
+        funfact: "Cairo is nicknamed 'The City of a Thousand Minarets'.",
+        weather: "sun"
+      },
+      {
+        city: "Sydney", tz: "Australia/Sydney", continent: "Australia",
+        photos: [
+          "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?auto=format&fit=crop&w=400&q=80",
+          "https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80"
+        ],
+        place: "Sydney Opera House",
+        funfact: "Sydney has over 100 beaches.",
+        weather: "sun"
+      },
+      // ... Expand for all cities and continents!
+      // For 2000+ lines, use a code/data generator to export a giant array here.
+    ];
+
+    // Videos: YouTube URLs grouped by city/region (expandable)
+    const famousVideos = [
+      {
+        title: "Nairobi National Park",
+        city: "Nairobi",
+        url: "https://www.youtube.com/embed/ppK3wm7kZ4g"
+      },
+      {
+        title: "A Tour of London",
+        city: "London",
+        url: "https://www.youtube.com/embed/lrLJMSsU4wI"
+      },
+      {
+        title: "Paris in 4K",
+        city: "Paris",
+        url: "https://www.youtube.com/embed/7pZQk5nStMY"
+      },
+      {
+        title: "New York City Guide",
+        city: "New York",
+        url: "https://www.youtube.com/embed/HiZXABM1DFw"
+      },
+      {
+        title: "Tokyo Street Life",
+        city: "Tokyo",
+        url: "https://www.youtube.com/embed/1vZ6vG6pX7k"
+      },
+      {
+        title: "Sydney in HD",
+        city: "Sydney",
+        url: "https://www.youtube.com/embed/yF9p1cfVw2c"
+      },
+      {
+        title: "Cairo & the Pyramids",
+        city: "Cairo",
+        url: "https://www.youtube.com/embed/5M7hB5W3r10"
+      }
+      // Add more YouTube/online videos for each city!
+    ];
+
+    // --- Utility: Group cities by continent ---
+    function groupBy(arr, key) {
+      return arr.reduce((acc, obj) => {
+        (acc[obj[key]] = acc[obj[key]] || []).push(obj);
+        return acc;
+      }, {});
+    }
+
+    // --- Render all city groups ---
+    function renderCityGroups(filteredCities = cities) {
+      const groups = groupBy(filteredCities, "continent");
+      const cityGroupsDiv = document.getElementById("city-groups");
+      cityGroupsDiv.innerHTML = '';
+      Object.keys(groups).forEach(continent => {
+        const section = document.createElement("section");
+        section.className = "continent-group";
+        section.innerHTML = `<div class="continent-title">${continent}</div>
+          <div class="clock-grid" id="clock-grid-${continent}"></div>`;
+        cityGroupsDiv.appendChild(section);
+        renderClocks(groups[continent], `clock-grid-${continent}`);
+      });
+    }
+
+    // --- Render clocks for a group ---
+    function renderClocks(cityArr, gridId) {
+      const container = document.getElementById(gridId);
+      container.innerHTML = '';
+      cityArr.forEach((entry, idx) => {
+        const card = document.createElement('div');
+        card.className = 'clock-card';
+        card.setAttribute('data-city', entry.city.toLowerCase());
+        card.setAttribute('title', `${entry.city} [${entry.tz}]`);
+        // Carousel
+        let carousel = `<div class="carousel-photos">` +
+          entry.photos.map(p => `<img class="carousel-photo" src="${p}" alt="${entry.city} photo" loading="lazy">`).join("") +
+          `</div>`;
+        // Like button
+        const likeId = `like-${gridId}-${idx}`;
+        let liked = window.localStorage.getItem(likeId) === "1";
+        card.innerHTML = `
+          ${carousel}
+          <div class="city-title">${entry.city}</div>
+          <div class="tz-label">${entry.tz.replace(/_/g,' ')}</div>
+          <div class="clock" id="clock-${gridId}-${idx}">--:--:--</div>
+          <div class="famous-place">📸 ${entry.place}</div>
+          <button class="like-btn${liked ? " liked" : ""}" onclick="toggleLike('${likeId}', this)">&#10084;</button>
+          <div class="fun-fact">Fact: ${entry.funfact}</div>
+          <div class="weather-info">${weatherIcon(entry.weather)} Weather</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // --- Weather icon (simple) ---
+    function weatherIcon(type) {
+      if(type==="sun") return "☀️";
+      if(type==="rain") return "🌧️";
+      if(type==="cloud") return "⛅";
+      return "🌏";
+    }
+
+    // --- Clock update ---
+    function updateClock() {
+      const now = new Date();
+      document.querySelectorAll('.clock-card').forEach((card, idx) => {
+        const city = card.querySelector('.city-title').textContent;
+        const cityObj = cities.find(c => c.city === city);
+        let timeStr = "N/A";
+        try {
+          if (cityObj && cityObj.tz) {
+            const time = new Date(now.toLocaleString('en-US', { timeZone: cityObj.tz }));
+            timeStr = time.toTimeString().slice(0,8);
+          }
+        } catch {}
+        const clockElem = card.querySelector('.clock');
+        if (clockElem) clockElem.innerText = timeStr;
+      });
+    }
+    setInterval(updateClock, 1000);
+
+    // --- Like button ---
+    function toggleLike(key, btn) {
+      if(window.localStorage.getItem(key)==="1") {
+        window.localStorage.removeItem(key); btn.classList.remove("liked");
+      } else {
+        window.localStorage.setItem(key,"1"); btn.classList.add("liked");
+      }
+    }
+
+    // --- Search filter ---
+    function filterClocks() {
+      const q = document.getElementById('search').value.toLowerCase();
+      if(!q) return renderCityGroups();
+      const filtered = cities.filter(entry =>
+        entry.city.toLowerCase().includes(q) ||
+        entry.place.toLowerCase().includes(q)
+      );
+      renderCityGroups(filtered);
+      updateClock();
+    }
+
+    // --- Travel Now: Go to random city card ---
+    function travelRandom() {
+      const idx = Math.floor(Math.random()*cities.length);
+      const city = cities[idx].city;
+      document.getElementById('search').value = city;
+      filterClocks();
+      setTimeout(() => document.querySelector('.clock-card')?.scrollIntoView({behavior:'smooth'}), 120);
+    }
+
+    // --- Render famous place videos ---
+    function renderVideos() {
+      const videoList = document.getElementById("video-list");
+      videoList.innerHTML = "";
+      famousVideos.forEach(v => {
+        const wrapper = document.createElement("div");
+        wrapper.style.display = "flex";
+        wrapper.style.flexDirection = "column";
+        wrapper.style.alignItems = "center";
+        wrapper.innerHTML = `
+          <iframe src="${v.url}" frameborder="0" allowfullscreen title="${v.title}"></iframe>
+          <div class="video-title">${v.title}</div>
+        `;
+        videoList.appendChild(wrapper);
+      });
+    }
+
+    // --- Dark mode toggle ---
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+    }
+
+    // --- Initial load ---
+    window.addEventListener('DOMContentLoaded', () => {
+      renderCityGroups();
+      updateClock();
+      renderVideos();
+    });
+  </script>
+</body>
+</html>
